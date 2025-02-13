@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 import hashlib, colorsys
 import math
+import vis
 
 # --- Unique Color Generation ---
 project_color_cache = {}
@@ -83,7 +84,8 @@ def end_day():
     """Log the END_OF_DAY event and quit the application."""
     switch_project("END_OF_DAY")
     root.destroy()
-
+    vis.visualiser()
+    
 # --- Jobs File Setup ---
 JOBS_FILE = "jobs.json"
 
@@ -231,20 +233,27 @@ root = tk.Tk()
 root.title("Project Dashboard")
 root.geometry("600x400")
 root.configure(bg="#2e2e2e")
+root.attributes("-topmost", True)  # Ensure the dashboard is always on top
 
 # Create a main container frame that fills the window.
 main_frame = tk.Frame(root, bg="#2e2e2e")
 main_frame.pack(expand=True, fill="both")
 
-# Configure the grid: three rows (header, jobs, controls) and one column.
-main_frame.rowconfigure(0, weight=0)  # Header (does not expand vertically)
-main_frame.rowconfigure(1, weight=1)  # Jobs area (expands)
-main_frame.rowconfigure(2, weight=0)  # Control row (buttons)
+# Configure the grid for proportional scaling.
+# Here we assign more weight to the job buttons area so they expand more.
+main_frame.rowconfigure(0, weight=2)  # Job Buttons (top)
+main_frame.rowconfigure(1, weight=1)  # Project info (middle)
+main_frame.rowconfigure(2, weight=0)  # Control buttons (bottom)
 main_frame.columnconfigure(0, weight=1)
 
-# Header Frame for status and details
+# Job Frame for the grid of job buttons (placed at the top)
+job_frame = tk.Frame(main_frame, bg="#2e2e2e")
+job_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+update_job_buttons()
+
+# Header Frame for status and details (project info in the middle)
 header_frame = tk.Frame(main_frame, bg="#2e2e2e")
-header_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
+header_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
 header_frame.columnconfigure(0, weight=1)
 
 status_label = tk.Label(header_frame, text="No project selected", font=("Helvetica", 16),
@@ -254,12 +263,6 @@ status_label.grid(row=0, column=0, sticky="w")
 details_label = tk.Label(header_frame, text="", font=("Helvetica", 12),
                          bg="#2e2e2e", fg="white")
 details_label.grid(row=1, column=0, sticky="w")
-
-# Job Frame for the grid of job buttons
-job_frame = tk.Frame(main_frame, bg="#2e2e2e")
-job_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
-
-update_job_buttons()
 
 # Control Frame for the bottom buttons
 control_frame = tk.Frame(main_frame, bg="#2e2e2e")
