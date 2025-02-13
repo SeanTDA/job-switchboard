@@ -4,6 +4,7 @@ import json
 import os
 from datetime import datetime
 import hashlib, colorsys
+import math
 
 # --- Unique Color Generation ---
 project_color_cache = {}
@@ -114,22 +115,23 @@ def save_jobs(jobs):
     with open(JOBS_FILE, "w") as f:
         json.dump(jobs, f, indent=4)
 
-# --- Update Job Buttons ---
 def update_job_buttons():
     """Clear and repopulate the grid of job buttons based on the current jobs list."""
     for widget in job_frame.winfo_children():
         widget.destroy()
     jobs = load_jobs()
-    cols = 3  # number of columns in the grid
     num_jobs = len(jobs)
-    rows_count = (num_jobs + cols - 1) // cols
-
-    # Configure grid weights for the job_frame so buttons expand equally
+    
+    # Determine the number of columns based on the square root of the number of jobs.
+    cols = math.ceil(math.sqrt(num_jobs)) if num_jobs > 0 else 1
+    rows_count = math.ceil(num_jobs / cols)
+    
+    # Configure grid weights so buttons expand equally.
     for r in range(rows_count):
         job_frame.rowconfigure(r, weight=1)
     for c in range(cols):
         job_frame.columnconfigure(c, weight=1)
-
+    
     for i, job in enumerate(jobs):
         row = i // cols
         col = i % cols
@@ -137,7 +139,6 @@ def update_job_buttons():
         btn = tk.Button(job_frame, text=job["name"], font=("Helvetica", 16),
                         bg=job["color"], fg=fg_color,
                         command=lambda j=job: switch_project(j["name"], j["color"]))
-        # Remove fixed width/height and have the button fill its grid cell.
         btn.grid(row=row, column=col, sticky="nsew", padx=5, pady=5)
 
 # --- Edit Jobs Window with Color Chooser, Add & Remove ---
